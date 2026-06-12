@@ -1,0 +1,5 @@
+retries,success_rate,avg_propagation,avg_contained
+0,0.998,0.462,0
+1,1.0,0.175,0.3895
+2,1.0,0.0595,0.533
+3,1.0,0.0215,0.5855
