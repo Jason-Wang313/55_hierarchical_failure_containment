@@ -14,13 +14,14 @@
 
 \newcommand{\sys}{\textsc{ContainNet}}
 \newcommand{\level}[1]{\texttt{L#1}}
+\raggedbottom
 
 \begin{document}
 \maketitle
 \nocite{*}
 
 \begin{abstract}
-Robot stacks are often organized hierarchically, but their failure handling is not. A local fault can leak upward through perception, planning, and execution layers until the whole mission is degraded or the system enters a brittle global fallback. We argue that the central design problem is not only detecting or repairing faults, but containing their propagation across hierarchy levels. We propose \sys{}, a containment-budget view of robot hierarchies in which each level is allowed only a bounded amount of local retry and a bounded summary of failure state before escalation. The goal is to minimize failure blast radius, not merely maximize eventual success. A simple simulator shows that explicit containment budgets reduce average propagation depth relative to unconstrained escalation, while preserving high success in the tested regime. We position the idea against robot fault diagnosis, fault-tolerant control, runtime assurance, behavior-tree recovery, and classical fault containment theory, and we identify the robotics-specific assumptions that those lines of work usually leave implicit.
+Robot stacks are often organized hierarchically, but their failure handling is not. A local fault can leak upward through perception, planning, and execution layers until the whole mission is degraded or the system enters a brittle global fallback. We argue that the central design problem is not only detecting or repairing faults, but containing their propagation across hierarchy levels. We propose \sys{}, a containment-budget view of robot hierarchies in which each level is allowed only a bounded amount of local retry and a bounded summary of failure state before escalation. A simple simulator shows that explicit containment budgets reduce average propagation depth relative to immediate escalation. V2 hardening adds a persistent-fault stress: at moderate persistent-fault rate, two retries have the best utility, 0.893, while eight retries reduce propagation further but raise masked-unsafe rate to 0.074 and utility drops to 0.841. The contribution is a workshop-level mechanism claim: containment budgets should be calibrated against retry cost and masked-fault risk, not maximized blindly.
 \end{abstract}
 
 \section{Introduction}
@@ -37,6 +38,9 @@ This paper makes three claims.
 \end{itemize}
 
 The contribution here is intentionally architectural. We do not claim a universal theorem about every robot hierarchy. We instead propose a simple mechanism, test it in a toy simulator, and use the literature sweep to define the novelty boundary honestly.
+
+\paragraph{Submission-hardening note.}
+Submission-hardening version: v2. Decision: workshop-only. The original simulator made retries nearly free. The v2 stress adds retry cost, persistent faults, and masked-unsafe state; it shows that unlimited local containment can be worse than a moderate budget.
 
 \section{Related Work}
 
@@ -103,7 +107,15 @@ Retries & Success rate & Avg. propagation & Avg. contained \\
 \label{tab:sim}
 \end{table}
 
-The directional result is simple: modest local retry already cuts propagation sharply. The important point is not that retries are always good. The point is that containment is measurable and controllable, and thus can be designed rather than hoped for.
+\begin{table}[t]
+\centering
+\small
+\input{v2_persistent_fault_table.tex}
+\caption{V2 persistent-fault stress at moderate persistent-fault rate. Larger retry budgets reduce propagation but can hide stale unsafe state and lower utility.}
+\label{tab:v2-persistent}
+\end{table}
+
+The directional result is simple: modest local retry already cuts propagation sharply. The important point is not that retries are always good. Table~\ref{tab:v2-persistent} makes the boundary explicit: at moderate persistent-fault rate, two retries produce the best utility, while four and eight retries continue reducing propagation but increase masked-unsafe faults. Containment is measurable and controllable, but its budget must be calibrated rather than treated as a monotone knob.
 
 \section{Discussion}
 
@@ -117,7 +129,7 @@ We do not prove optimality of a universal containment policy. We do not show tha
 
 \subsection{When the idea is weak}
 
-The idea is weaker if the robot stack is flat, if the hierarchy is purely decorative, or if the environment is so benign that failure escalation never matters. It is also weaker if the evaluation never leaves a toy simulator. Those are real limitations.
+The idea is weaker if the robot stack is flat, if the hierarchy is purely decorative, or if the environment is so benign that failure escalation never matters. It is also weaker if the evaluation never leaves a toy simulator. V2 adds another limitation: if local retries hide persistent faults, containment can delay necessary escalation and create unsafe stale state. Those are real limitations.
 
 \section{Conclusion}
 

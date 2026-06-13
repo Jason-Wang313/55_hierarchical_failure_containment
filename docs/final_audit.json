@@ -1,0 +1,14 @@
+{
+  "paper": 55,
+  "decision": "workshop-only",
+  "canonical_pdf": "C:/Users/wangz/Downloads/55.pdf",
+  "key_result": "Persistent-fault stress shows calibrated budgets beat unbounded retry; at persistent-fault probability 0.25, 2 retries utility is 0.893 versus 0.841 for 8 retries.",
+  "v2_metrics": {
+    "moderate_persistent_two_retry_utility": 0.892865,
+    "moderate_persistent_two_retry_masked_unsafe": 0.0,
+    "moderate_persistent_eight_retry_utility": 0.841465,
+    "moderate_persistent_eight_retry_masked_unsafe": 0.0736,
+    "high_persistent_two_retry_utility": 0.861745,
+    "high_persistent_eight_retry_utility": 0.73295
+  }
+}

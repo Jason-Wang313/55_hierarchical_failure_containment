@@ -1,0 +1,272 @@
+{
+  "decision": "workshop-only",
+  "reason": "Containment budgets need cost and masked-fault audits; unlimited local retry is not robust.",
+  "best_by_persistent_fault_rate": {
+    "0.05": {
+      "persistent_fault_p": 0.05,
+      "retries": 6,
+      "n": 5000,
+      "success_rate": 0.9832,
+      "avg_propagation": 0.0114,
+      "avg_contained": 0.7166,
+      "avg_retry_attempts": 1.2942,
+      "unsafe_masked_rate": 0.0134,
+      "utility": 0.943675
+    },
+    "0.25": {
+      "persistent_fault_p": 0.25,
+      "retries": 2,
+      "n": 5000,
+      "success_rate": 0.935,
+      "avg_propagation": 0.1474,
+      "avg_contained": 0.5174,
+      "avg_retry_attempts": 1.0958,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.892865
+    },
+    "0.45": {
+      "persistent_fault_p": 0.45,
+      "retries": 2,
+      "n": 5000,
+      "success_rate": 0.9124,
+      "avg_propagation": 0.2152,
+      "avg_contained": 0.4254,
+      "avg_retry_attempts": 1.1654,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.861745
+    }
+  },
+  "summary": [
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 0,
+      "n": 5000,
+      "success_rate": 0.825,
+      "avg_propagation": 0.56,
+      "avg_contained": 0,
+      "avg_retry_attempts": 0,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.769
+    },
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 1,
+      "n": 5000,
+      "success_rate": 0.9116,
+      "avg_propagation": 0.2074,
+      "avg_contained": 0.4418,
+      "avg_retry_attempts": 0.7376,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.87242
+    },
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 2,
+      "n": 5000,
+      "success_rate": 0.9544,
+      "avg_propagation": 0.0826,
+      "avg_contained": 0.6026,
+      "avg_retry_attempts": 1.0256,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.9205
+    },
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 3,
+      "n": 5000,
+      "success_rate": 0.9684,
+      "avg_propagation": 0.039,
+      "avg_contained": 0.6666,
+      "avg_retry_attempts": 1.1606,
+      "unsafe_masked_rate": 0.0054,
+      "utility": 0.933055
+    },
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 4,
+      "n": 5000,
+      "success_rate": 0.9796,
+      "avg_propagation": 0.0224,
+      "avg_contained": 0.6976,
+      "avg_retry_attempts": 1.229,
+      "unsafe_masked_rate": 0.009,
+      "utility": 0.942585
+    },
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 6,
+      "n": 5000,
+      "success_rate": 0.9832,
+      "avg_propagation": 0.0114,
+      "avg_contained": 0.7166,
+      "avg_retry_attempts": 1.2942,
+      "unsafe_masked_rate": 0.0134,
+      "utility": 0.943675
+    },
+    {
+      "persistent_fault_p": 0.05,
+      "retries": 8,
+      "n": 5000,
+      "success_rate": 0.9842,
+      "avg_propagation": 0.0076,
+      "avg_contained": 0.7228,
+      "avg_retry_attempts": 1.3296,
+      "unsafe_masked_rate": 0.0148,
+      "utility": 0.94354
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 0,
+      "n": 5000,
+      "success_rate": 0.825,
+      "avg_propagation": 0.56,
+      "avg_contained": 0,
+      "avg_retry_attempts": 0,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.769
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 1,
+      "n": 5000,
+      "success_rate": 0.8956,
+      "avg_propagation": 0.2642,
+      "avg_contained": 0.369,
+      "avg_retry_attempts": 0.7376,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.8507399999999999
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 2,
+      "n": 5000,
+      "success_rate": 0.935,
+      "avg_propagation": 0.1474,
+      "avg_contained": 0.5174,
+      "avg_retry_attempts": 1.0958,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.892865
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 3,
+      "n": 5000,
+      "success_rate": 0.9338,
+      "avg_propagation": 0.1012,
+      "avg_contained": 0.5866,
+      "avg_retry_attempts": 1.328,
+      "unsafe_masked_rate": 0.027,
+      "utility": 0.8783299999999999
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 4,
+      "n": 5000,
+      "success_rate": 0.9346,
+      "avg_propagation": 0.076,
+      "avg_contained": 0.6236,
+      "avg_retry_attempts": 1.4678,
+      "unsafe_masked_rate": 0.0442,
+      "utility": 0.8704149999999999
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 6,
+      "n": 5000,
+      "success_rate": 0.9268,
+      "avg_propagation": 0.0552,
+      "avg_contained": 0.6562,
+      "avg_retry_attempts": 1.6834,
+      "unsafe_masked_rate": 0.067,
+      "utility": 0.8490449999999999
+    },
+    {
+      "persistent_fault_p": 0.25,
+      "retries": 8,
+      "n": 5000,
+      "success_rate": 0.9242,
+      "avg_propagation": 0.0382,
+      "avg_contained": 0.6764,
+      "avg_retry_attempts": 1.8318,
+      "unsafe_masked_rate": 0.0736,
+      "utility": 0.841465
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 0,
+      "n": 5000,
+      "success_rate": 0.825,
+      "avg_propagation": 0.56,
+      "avg_contained": 0,
+      "avg_retry_attempts": 0,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.769
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 1,
+      "n": 5000,
+      "success_rate": 0.8804,
+      "avg_propagation": 0.32,
+      "avg_contained": 0.298,
+      "avg_retry_attempts": 0.7376,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.82996
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 2,
+      "n": 5000,
+      "success_rate": 0.9124,
+      "avg_propagation": 0.2152,
+      "avg_contained": 0.4254,
+      "avg_retry_attempts": 1.1654,
+      "unsafe_masked_rate": 0.0,
+      "utility": 0.861745
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 3,
+      "n": 5000,
+      "success_rate": 0.8958,
+      "avg_propagation": 0.17,
+      "avg_contained": 0.4964,
+      "avg_retry_attempts": 1.5014,
+      "unsafe_masked_rate": 0.0502,
+      "utility": 0.818675
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 4,
+      "n": 5000,
+      "success_rate": 0.8868,
+      "avg_propagation": 0.1348,
+      "avg_contained": 0.5446,
+      "avg_retry_attempts": 1.7344,
+      "unsafe_masked_rate": 0.0818,
+      "utility": 0.79315
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 6,
+      "n": 5000,
+      "success_rate": 0.867,
+      "avg_propagation": 0.1012,
+      "avg_contained": 0.5936,
+      "avg_retry_attempts": 2.105,
+      "unsafe_masked_rate": 0.1222,
+      "utility": 0.749265
+    },
+    {
+      "persistent_fault_p": 0.45,
+      "retries": 8,
+      "n": 5000,
+      "success_rate": 0.8606,
+      "avg_propagation": 0.0724,
+      "avg_contained": 0.6232,
+      "avg_retry_attempts": 2.3792,
+      "unsafe_masked_rate": 0.1354,
+      "utility": 0.73295
+    }
+  ]
+}
