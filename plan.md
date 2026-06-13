@@ -4,4 +4,4 @@
 2. Distill the 300-paper serious skim into `docs/literature_map.md` and the strongest field box hypothesis.
 3. Build a hostile prior-work set and novelty boundary analysis, then choose the strongest thesis.
 4. Write the paper artifacts: claims, reviewer attacks, final audit, and the ICLR-style manuscript.
-5. Compile the PDF, copy it to `C:/Users/wangz/Downloads/55.pdf`, and push the completed repo.
+5. Compile and verify the canonical PDF at `C:/Users/wangz/Downloads/55.pdf`; do not copy to Desktop.
