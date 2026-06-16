@@ -1,7 +1,9 @@
 # Plan
 
 1. Sweep the literature at scale and build `docs/related_work_matrix.csv` with at least 1000 entries.
-2. Distill the 300-paper serious skim into `docs/literature_map.md` and the strongest field box hypothesis.
-3. Build a hostile prior-work set and novelty boundary analysis, then choose the strongest thesis.
-4. Write the paper artifacts: claims, reviewer attacks, final audit, and the ICLR-style manuscript.
-5. Compile and verify the canonical PDF at `C:/Users/wangz/Downloads/55.pdf`; do not copy to Desktop.
+2. Preserve the v2 persistent-fault stress as a negative control showing that high retry budgets can hide persistent unsafe state.
+3. Run the v3 full-scale deterministic benchmark across tasks, depths, faults, persistence regimes, observability regimes, cost regimes, and policies.
+4. Generate RAM-light row-level artifacts, summary CSVs, LaTeX tables, figures, validation metadata, and appendix tables.
+5. Expand the ICLR-style manuscript to a 25+ page final version with serious baselines, oracle ceiling, stress tests, limitations, and reproducibility guidance.
+6. Compile and visually verify the canonical PDF at `C:/Users/wangz/Downloads/55.pdf`; do not copy to Desktop.
+7. Record final page count, file size, SHA256, and validation status before commit.

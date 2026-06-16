@@ -8,10 +8,10 @@
 - Behavior-tree recovery.
 - Classical distributed-system fault containment.
 
-## Plausible Contribution
+## Contribution
 
-Treat upward failure propagation through a robot hierarchy as a measured budgeted design variable.
+Treat upward failure propagation through a robot hierarchy as a measured budgeted design variable, and show that the budget must be risk-calibrated rather than maximized.
 
-## V2 Boundary
+## Final Boundary
 
-Budgets are not monotone-good. They need retry-cost, persistent-fault, and masked-unsafe-state audits.
+The final manuscript contributes a deterministic full-scale benchmark, row-level artifacts, stress tables, and a concrete risk-calibrated containment policy. It does not claim a new universal fault-tolerant controller or a real-robot safety proof.

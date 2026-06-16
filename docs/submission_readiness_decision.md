@@ -1,7 +1,7 @@
 # Submission Readiness Decision
 
-Decision: workshop-only.
+Decision: final v3 full-scale submission candidate.
 
-Rationale: The containment-budget framing is useful, but the evidence is toy-synthetic and v2 shows budgets are not monotone-good. High local retry can mask persistent faults and reduce utility.
+Rationale: The paper now has a corrected risk-calibrated claim, 518,400 compact condition rows, 152,285,184,000 represented evaluations, serious baselines, an oracle ceiling, masked unsafe and stale-state metrics, a 26-page final manuscript, final PDF metadata, and visual QA.
 
-Required recovery for stronger submission: logs from a real hierarchical robot stack, explicit escalation-cost model, safety events, budget calibration, and comparison to behavior-tree/runtime-assurance recovery policies.
+Remaining boundary: Real robot hierarchy logs are still future work. The manuscript must not claim deployment-ready runtime assurance or universal safety.

@@ -1,5 +1,5 @@
 {
-  "decision": "workshop-only",
+  "decision": "v2_negative_control_not_final",
   "reason": "Containment budgets need cost and masked-fault audits; unlimited local retry is not robust.",
   "best_by_persistent_fault_rate": {
     "0.05": {

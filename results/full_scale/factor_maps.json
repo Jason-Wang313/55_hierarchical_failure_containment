@@ -1,0 +1,64 @@
+{
+  "task": {
+    "t00": "mobile pick and place",
+    "t01": "in-hand manipulation",
+    "t02": "tool-use assembly",
+    "t03": "door drawer navigation",
+    "t04": "human handover",
+    "t05": "warehouse tote retrieval",
+    "t06": "cable cloth handling",
+    "t07": "mobile inspection",
+    "t08": "constrained insertion",
+    "t09": "bimanual transport",
+    "t10": "outdoor navigation manipulation",
+    "t11": "recovery after failed grasp"
+  },
+  "depth": {
+    "d00": "2-level controller supervisor",
+    "d01": "3-level skill hierarchy",
+    "d02": "4-level standard robot stack",
+    "d03": "5-level mission stack",
+    "d04": "6-level multi-skill hierarchy",
+    "d05": "mixed-depth adaptive stack"
+  },
+  "fault": {
+    "f00": "transient perception fault",
+    "f01": "actuator saturation",
+    "f02": "contact instability",
+    "f03": "stale world model",
+    "f04": "planner precondition violation",
+    "f05": "persistent hardware calibration fault"
+  },
+  "persistence": {
+    "p00": "rare transient",
+    "p01": "low persistent",
+    "p02": "moderate persistent",
+    "p03": "high persistent",
+    "p04": "burst persistent",
+    "p05": "adversarial recurring fault"
+  },
+  "observability": {
+    "o00": "fully observed fault",
+    "o01": "delayed diagnosis",
+    "o02": "partial observability",
+    "o03": "noisy false alarms",
+    "o04": "masked stale-state observability"
+  },
+  "cost": {
+    "c00": "cheap retry cheap escalation",
+    "c01": "cheap retry expensive escalation",
+    "c02": "expensive retry cheap escalation",
+    "c03": "expensive retry expensive escalation",
+    "c04": "safety-critical retry cost"
+  },
+  "policy": {
+    "immediate_escalation": "Immediate escalation",
+    "fixed_one_retry": "Fixed one retry",
+    "fixed_two_retries": "Fixed two retries",
+    "fixed_four_retries": "Fixed four retries",
+    "unlimited_retry": "Unlimited retry",
+    "local_backoff": "Local exponential backoff",
+    "risk_calibrated": "Risk-calibrated containment",
+    "oracle": "Oracle containment"
+  }
+}

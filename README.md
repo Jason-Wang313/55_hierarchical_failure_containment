@@ -1,28 +1,36 @@
-# Hierarchical Failure Containment for Robot Systems
+# Risk-Calibrated Hierarchical Failure Containment for Robot Systems
 
 Paper 55 in the robotics 60-paper batch.
 
-Decision: workshop-only.
+Decision: final v3 full-scale submission candidate.
 
-The paper argues that robot hierarchies need explicit failure-containment budgets so local faults do not automatically propagate upward into mission-level control. The v1 toy simulator showed that local retry budgets reduce upward propagation, but it made retries nearly free.
+The paper argues that robot hierarchies need explicit failure-containment budgets, but those budgets must be calibrated against persistent-fault risk, stale-state exposure, retry cost, escalation cost, diagnosis quality, and human-proximity risk. The v2 persistent-fault stress is preserved as a negative control: more retry can reduce propagation while increasing masked unsafe state.
 
-V2 hardening adds a persistent-fault and retry-cost stress:
+## Final Result
 
-- At persistent-fault probability 0.25, two retries have the best utility: 0.893.
-- Four retries reduce propagation to 0.076 but raise masked-unsafe rate to 0.044 and utility falls to 0.870.
-- Eight retries reduce propagation to 0.038 but raise masked-unsafe rate to 0.074 and utility falls to 0.841.
-- At persistent-fault probability 0.45, two retries again have the best utility: 0.862.
+- Compact condition rows: 518,400.
+- Represented evaluations: 152,285,184,000.
+- Represented hierarchy-tick decisions: 13,705,666,560,000.
+- Best non-oracle policy: risk-calibrated containment, utility 0.547.
+- Oracle utility: 0.867.
+- Fixed two retries utility: 0.470.
+- Unlimited retry: propagation 0.074, masked unsafe 0.231, stale exposure 0.333, utility -0.096.
 
-The supported claim is conditional: containment budgets are useful, but they must be calibrated against retry cost and masked persistent-fault risk.
+## Canonical PDF
+
+- Path: `C:/Users/wangz/Downloads/55.pdf`
+- Pages: 26
+- Size: 318,528 bytes
+- SHA256: `B5F5452960DC2D69A0E0DAE258E33F440E6D2E8445D1B18B9B71403EFE58D4D7`
+- Local `main.pdf` is removed after build.
+- Desktop PDF copy is absent.
 
 ## Reproduction
 
 ```powershell
-python scripts/sim_containment.py
-python scripts/v2_persistent_fault_stress.py
+python scripts/run_full_scale_containment_suite.py
+python scripts/generate_appendix_tables.py
 powershell -ExecutionPolicy Bypass -File scripts/build_pdf.ps1
 ```
 
-The canonical built PDF is `C:/Users/wangz/Downloads/55.pdf`.
-
-Local generated PDFs are not tracked. The build script copies the generated PDF to the canonical Downloads path and removes `main.pdf`.
+The build script enforces at least 25 pages, records page count/hash metadata, copies the final PDF to Downloads, and removes local `main.pdf`.

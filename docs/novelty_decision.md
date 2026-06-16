@@ -1,7 +1,7 @@
 # Novelty Decision
 
-Decision after v2 hardening: workshop-only.
+Decision after v3 full-scale hardening: final submission candidate.
 
-Reason: Failure-containment budgeting is a useful robotics architecture framing, but the current evidence is a toy simulator. V2 shows the real contribution is not unlimited local retry; it is calibrated containment with masked-fault audits.
+Reason: The old architectural note now has a corrected claim, full-scale deterministic stress coverage, serious baselines, oracle ceiling, masked-unsafe and stale-state metrics, and a 26-page final manuscript. The contribution is risk-calibrated hierarchical failure containment as a reporting and policy mechanism for robot stacks.
 
-Novelty boundary: do not present this as a new universal fault-tolerant control algorithm. Present it as a mechanism and reporting contract for hierarchical robot stacks.
+Novelty boundary: do not present this as a universal runtime-assurance replacement or a new fault-tolerant control theorem. Present it as a benchmarked containment-budget discipline with explicit limitations.

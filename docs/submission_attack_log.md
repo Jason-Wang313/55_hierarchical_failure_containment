@@ -8,10 +8,12 @@ Decision impact: narrow to calibrated containment budgets.
 
 ## Attack: local containment can mask persistent faults
 
-Result: Sustained. Eight retries raise masked unsafe rate to 0.074 at moderate persistent-fault rate.
+Result: Sustained. V2 and v3 both show that high retry can hide unsafe persistent state.
 
-Decision impact: workshop-only.
+Decision impact: make masked unsafe state and stale exposure primary metrics.
 
 ## Attack: toy simulation is not a robot evaluation
 
-Result: Sustained. Real robot hierarchy logs remain required.
+Result: Partly sustained. V3 broadens to a full-scale deterministic mechanism benchmark but still does not claim real-robot deployment safety.
+
+Decision impact: final manuscript is submission-ready as a benchmark/reporting paper, with real robot validation listed as future work.

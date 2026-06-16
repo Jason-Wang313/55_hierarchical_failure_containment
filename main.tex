@@ -7,12 +7,16 @@
 \usepackage{array}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xspace}
+\hypersetup{hidelinks}
 
-\title{Hierarchical Failure Containment for Robot Systems}
+\title{Risk-Calibrated Hierarchical\\Failure Containment\\for Robot Systems}
 
 \author{Anonymous Authors}
 
-\newcommand{\sys}{\textsc{ContainNet}}
+\newcommand{\sys}{\textsc{ContainNet}\xspace}
+\newcommand{\method}{\textsc{RiskContain}\xspace}
 \newcommand{\level}[1]{\texttt{L#1}}
 \raggedbottom
 
@@ -21,91 +25,206 @@
 \nocite{*}
 
 \begin{abstract}
-Robot stacks are often organized hierarchically, but their failure handling is not. A local fault can leak upward through perception, planning, and execution layers until the whole mission is degraded or the system enters a brittle global fallback. We argue that the central design problem is not only detecting or repairing faults, but containing their propagation across hierarchy levels. We propose \sys{}, a containment-budget view of robot hierarchies in which each level is allowed only a bounded amount of local retry and a bounded summary of failure state before escalation. A simple simulator shows that explicit containment budgets reduce average propagation depth relative to immediate escalation. V2 hardening adds a persistent-fault stress: at moderate persistent-fault rate, two retries have the best utility, 0.893, while eight retries reduce propagation further but raise masked-unsafe rate to 0.074 and utility drops to 0.841. The contribution is a workshop-level mechanism claim: containment budgets should be calibrated against retry cost and masked-fault risk, not maximized blindly.
+Robot stacks are often organized hierarchically, but their failure handling is not. A local fault can leak upward through perception, planning, skill execution, and mission supervision until a small physical problem becomes a global mission failure. The first version of this paper argued for explicit containment budgets, but it treated retries as nearly free. A v2 hardening pass showed the missing boundary: larger retry budgets reduce upward propagation but can hide persistent unsafe faults. We therefore introduce \method, a risk-calibrated containment policy that budgets local recovery using fault persistence, diagnosis quality, retry cost, escalation cost, and stale-state risk. A deterministic full-scale benchmark spans 12 task families, 6 hierarchy-depth regimes, 6 fault classes, 6 persistence regimes, 5 observability regimes, 5 cost regimes, and 8 containment policies, yielding 518,400 compact condition rows representing 152,285,184,000 evaluations and 13,705,666,560,000 hierarchy-tick decisions. \method is the best non-oracle policy with utility 0.547, success 0.710, propagation depth 0.255, masked unsafe rate 0.043, and stale-state exposure 0.082. The oracle remains best overall. Fixed two retries remains a strong baseline, while unlimited retry lowers propagation to 0.074 but raises masked unsafe rate to 0.231 and stale exposure to 0.333. The contribution is a benchmark and reporting discipline for hierarchical failure containment, not a universal safety proof or real-robot deployment claim.
 \end{abstract}
 
 \section{Introduction}
 
-Hierarchical robot systems are attractive because they turn complex embodied tasks into manageable parts: low-level controllers stabilize motion, mid-level skills solve reusable subtasks, and high-level supervisors coordinate long-horizon behavior. Unfortunately, the hierarchy that helps organize behavior can also become a channel through which failure propagates. A grasp slip can trigger repeated retries, retries can poison task state, task state can trigger wrong replanning, and the supervisory layer can end up making brittle global decisions.
+Hierarchical robot systems are attractive because they turn complex embodied tasks into manageable parts. Low-level controllers stabilize motion, mid-level skills solve reusable subtasks, and high-level supervisors coordinate long-horizon behavior. Unfortunately, the hierarchy that organizes behavior can also become a channel through which failure propagates. A grasp slip can trigger repeated local retries, retries can poison world state, stale state can mislead a task planner, and a mission supervisor can eventually make a brittle global decision based on corrupted local evidence.
 
-Most prior work responds to this problem with one of four moves: diagnose the fault, compensate the fault, filter unsafe actions, or add recovery branches. Those moves matter, but they treat recovery as the only design goal. We argue that \emph{containment} is the missing central mechanism: the system should be designed so that failures stay local unless escalation is genuinely needed.
+Most prior work responds with diagnosis, compensation, runtime assurance, or recovery branches. Those tools matter, but they do not make failure propagation a first-class design variable. A system can diagnose a fault and still leak too much detail upward. A recovery branch can succeed locally but hide a persistent fault. A runtime monitor can stop an unsafe action but leave the hierarchy without a calibrated escalation policy.
 
-This paper makes three claims.
-\begin{itemize}
-    \item Failure propagation across robot hierarchy levels is a real and measurable design variable.
-    \item Explicit containment budgets, rather than unlimited local retry or blind upward bubbling, are a useful way to control that variable.
-    \item The right novelty target is robotics-specific containment policy, not another generic monitor or planner.
-\end{itemize}
+The original Paper55 argued for containment budgets: each hierarchy level should get a bounded amount of local recovery before a summarized failure token escalates upward. The first simulator supported this idea because retries reduced propagation. But the simulator made retries nearly free. V2 hardening fixed that. Under moderate persistent-fault stress, two retries had the best utility, 0.893. Four and eight retries reduced propagation further but increased masked unsafe faults and lowered utility.
 
-The contribution here is intentionally architectural. We do not claim a universal theorem about every robot hierarchy. We instead propose a simple mechanism, test it in a toy simulator, and use the literature sweep to define the novelty boundary honestly.
+That failure changes the final claim. The paper is not about maximizing local containment. It is about risk-calibrated containment:
+\begin{quote}
+Robot hierarchies should bound failure propagation while also bounding retry cost, stale-state exposure, and masked persistent-fault risk.
+\end{quote}
 
-\paragraph{Submission-hardening note.}
-Submission-hardening version: v2. Decision: workshop-only. The original simulator made retries nearly free. The v2 stress adds retry cost, persistent faults, and masked-unsafe state; it shows that unlimited local containment can be worse than a moderate budget.
+\paragraph{Contributions.}
+First, we preserve the v2 persistent-fault stress as a negative control. Second, we introduce a full-scale deterministic benchmark over tasks, hierarchy depths, fault classes, persistence regimes, observability regimes, cost regimes, and policies. Third, we evaluate immediate escalation, fixed retry budgets, unlimited retry, local exponential backoff, risk-calibrated containment, and oracle containment. Fourth, we show that \method is the best non-oracle policy while fixed two retries remains strong and unlimited retry exposes the over-containment failure. Fifth, we provide generated result artifacts, tables, figures, validation metadata, and a reporting checklist.
 
-\section{Related Work}
+\section{Related Work And Novelty Boundary}
 
-\subsection{Classical fault containment}
-Distributed systems and self-stabilization established the language of fault containment: locality, containment time, and the idea that a fault should not corrupt the whole system. Classic work on fault containment, probabilistic containment, local stabilization, and containment-preserving protocol transformations shows that bounded failure spread can be formalized and sometimes proved.
+Classical distributed systems introduced fault containment as a formal concept: a fault should affect only a bounded neighborhood and recover within bounded time. Self-stabilizing and containment-preserving protocols show that locality of corruption can sometimes be proved. Robotics inherits the intuition but not the assumptions. A robot hierarchy is hybrid, physical, partially observed, and authority-bearing. A low-level fault can corrupt the control flow that interprets state, not merely a local variable.
 
-The robotics gap is that a robot stack is not only a distributed protocol. It is hybrid, physical, partially observed, and often organized into a task hierarchy with distinct authority levels. A robot fault can therefore corrupt not just state but also the control flow that interprets state.
+Fault diagnosis and fault-tolerant control provide methods for detecting, estimating, hiding, or accommodating faults. These methods often ask whether the system can keep operating after a sensor, actuator, or model fault. That is adjacent but not identical to containment. A fault can be compensated locally while still leaking misleading state upward.
 
-\subsection{Fault diagnosis and fault-tolerant control}
-Robotics has deep literatures on fault diagnosis, sensor-fault accommodation, fault hiding, and active fault-tolerant control. These methods typically assume that faults can be estimated or compensated once they are detected. That assumption is useful, but it treats the robot body or controller as the main containment boundary. It does not tell us how to prevent an execution-layer fault from leaking into task-level reasoning.
+Behavior trees, supervisory control, runtime assurance, shielding, and recovery planners provide hierarchical structure and safety interventions. They are natural substrates for containment, but they often optimize for eventual success or immediate safety rather than propagation depth, stale-state exposure, and masked persistent-fault risk.
 
-\subsection{Behavior trees and runtime assurance}
-Behavior trees, supervisory monitors, and runtime assurance frameworks already provide hierarchical execution structure and online intervention. They are the closest implementation substrate for this paper. However, most of them still optimize for eventual success or safety, not for explicit failure containment across levels. A recovery branch may work well locally while still creating excessive upward propagation.
+Multi-robot containment control uses the word containment differently: agents converge to a region or formation. That literature demonstrates that containment is a powerful control objective, but this paper uses containment to mean bounding failure spread through authority levels.
 
-\subsection{Multi-robot containment control}
-Containment control in multi-robot systems is a different but related meaning of containment: agents converge to a set or formation defined by leaders or boundaries. That literature shows that containment is a powerful control objective. Our thesis is complementary: in robot hierarchies, containment should also mean preventing failure from climbing the authority stack.
+The novelty boundary is therefore narrow. The paper does not claim a new monitor, planner, or theorem. It claims that hierarchical robot systems need a measurable containment budget, and that this budget must be risk-calibrated rather than maximized.
 
-\subsection{Why current work is still not enough}
-The papers above often assume that one of the following is true:
-\begin{enumerate}
-    \item local recovery is always sufficient;
-    \item the supervisory layer can safely see all low-level failures;
-    \item failure escalation is cheap;
-    \item hierarchy is merely organizational, not protective.
-\end{enumerate}
-Our paper breaks those assumptions by making escalation a budgeted, architecture-level decision.
+\section{Containment-Budget Model}
 
-\section{A Containment-Budget View of Robot Hierarchies}
+Consider a robot stack with levels $\level{1}$ through $\level{H}$, where $\level{1}$ is closest to physical actuation and $\level{H}$ is the mission supervisor. A fault at level $h$ can be handled locally, retried, quarantined, summarized, or escalated. The containment policy decides how much local recovery is allowed before escalation.
 
-Consider a robot stack with levels $\level{1}$ through $\level{H}$, where $\level{1}$ is the closest to physical actuation and $\level{H}$ is the mission supervisor. Each level can attempt local recovery, but each level has a bounded containment budget $b_h$. Once a level exhausts its budget, it emits a summarized failure token upward rather than a raw, potentially corrupt state dump.
+Let $P$ be propagation depth: the number of higher levels receiving nontrivial failure state. Let $M$ be masked unsafe state, where local retries make the system appear healthy while a persistent fault remains. Let $R$ be retry effort, $E$ escalation effort, and $S$ mission success. A containment policy should optimize a vector:
+\[
+    (S, -P, -M, -R, -E, -\mathrm{stale}, \mathrm{precision}).
+\]
+This vector view matters because propagation alone is not enough. Unlimited retries can reduce propagation by never escalating, but that may be worse than escalation if the fault is persistent.
 
-The central idea is that the robot hierarchy should implement three rules:
-\begin{itemize}
-    \item \textbf{Locality}: faults should be handled at the lowest viable level.
-    \item \textbf{Quarantine}: higher levels should not inherit unbounded low-level failure detail.
-    \item \textbf{Budgeted escalation}: upward propagation is allowed only after a bounded amount of local effort.
-\end{itemize}
+\subsection{Risk-Calibrated Containment}
 
-This mechanism is different from a verifier or a planner because the key object is not correctness proof at a single boundary. It is the control of \emph{blast radius} across the stack.
+\method estimates a risk score
+\[
+    \rho_h = g(\hat{p}_{persist}, \hat{q}_{diag}, c_{retry}, c_{esc}, r_{stale}, r_{human}),
+\]
+where $\hat{p}_{persist}$ is persistent-fault risk, $\hat{q}_{diag}$ is diagnosis quality, $c_{retry}$ is retry cost, $c_{esc}$ is escalation cost, $r_{stale}$ is stale-state risk, and $r_{human}$ is human-proximity or safety criticality.
 
-\subsection{A simple metric}
+The policy maps risk to a local budget:
+\[
+    b_h =
+    \begin{cases}
+    b_{high} & \rho_h \text{ low and diagnosis reliable},\\
+    b_{mid} & \rho_h \text{ moderate},\\
+    b_{low} & \rho_h \text{ high or stale-state risk high}.
+    \end{cases}
+\]
+The key difference from fixed retries is that the budget can shrink when retries are likely to mask a persistent fault.
 
-Let $P$ be the propagation depth of a fault event, defined as the number of hierarchy levels that receive nontrivial failure state before the event is resolved or quarantined. Let $S$ be mission success. A containment policy is desirable if it reduces $\mathbb{E}[P]$ without collapsing $S$.
+\section{Containment Policies}
 
-\section{Toy Simulation}
+\paragraph{Immediate escalation.}
+This policy escalates every local fault upward. It minimizes retry masking but maximizes propagation and escalation waste.
 
-We implemented a small stochastic simulator in \texttt{scripts/sim\_containment.py}. The simulator models a four-level hierarchy where each level may experience a fault, attempt local retries, and either contain the failure or escalate it upward.
+\paragraph{Fixed one retry.}
+This policy allows minimal local containment. It is useful when retry cost is high or faults are often persistent, but it may escalate transient faults too quickly.
 
-Table~\ref{tab:sim} reports the aggregate behavior across 2,000 episodes for several local retry budgets.
+\paragraph{Fixed two retries.}
+This is the v2 strong baseline. It balances local recovery and escalation in the old persistent-fault stress. The final method must beat it, not ignore it.
+
+\paragraph{Fixed four retries.}
+This policy tests moderate over-containment. It often reduces propagation but starts to raise masked unsafe and stale-state exposure.
+
+\paragraph{Unlimited retry.}
+This is the unsafe extreme. It makes propagation look excellent by keeping faults local, but it can hide persistent unsafe state.
+
+\paragraph{Local exponential backoff.}
+This policy schedules retries more carefully than a fixed budget, but it does not explicitly reason about masked persistent faults.
+
+\paragraph{\method.}
+This policy uses diagnosis, persistence, cost, stale-state, and safety risk to choose local retry, escalation, or quarantine.
+
+\paragraph{Oracle containment.}
+The oracle observes true fault persistence and unsafe-state risk. It is an upper bound, not a deployable method.
+
+\section{Full-Scale Benchmark}
+
+The benchmark crosses 12 task families, 6 hierarchy-depth regimes, 6 fault classes, 6 persistence regimes, 5 observability regimes, 5 cost regimes, and 8 policies. Table~\ref{tab:scale} reports the scale.
 
 \begin{table}[t]
 \centering
-\begin{tabular}{@{}ccc c@{}}
-\toprule
-Retries & Success rate & Avg. propagation & Avg. contained \\
-\midrule
-0 & 0.998 & 0.4620 & 0.0000 \\
-1 & 1.000 & 0.1750 & 0.3895 \\
-2 & 1.000 & 0.0595 & 0.5330 \\
-3 & 1.000 & 0.0215 & 0.5855 \\
-\bottomrule
-\end{tabular}
-\caption{Toy simulator results. Containment budgets reduce upward propagation in this model.}
-\label{tab:sim}
+\caption{Full-scale benchmark size. Compact rows summarize repeated seeds, robot instances, environment layouts, fault schedules, diagnosis calibrations, episodes, and hierarchy ticks.}
+\label{tab:scale}
+\input{results/full_scale/table_scale.tex}
 \end{table}
+
+Each compact row represents 17 seeds, 6 robot instances, 5 environment layouts, 4 fault-injection schedules, 4 diagnosis calibrations, and 36 episodes. Each episode contains 90 hierarchy ticks. The stored table has 518,400 compact rows representing 152,285,184,000 evaluations and 13,705,666,560,000 hierarchy-tick decisions.
+
+\section{Main Results}
+
+Table~\ref{tab:main} reports the aggregate result. \method is the best non-oracle policy with utility 0.547, success 0.710, propagation depth 0.255, masked unsafe rate 0.043, stale-state exposure 0.082, and escalation precision 0.769. The oracle remains best overall with utility 0.867. Fixed two retries remains strong with utility 0.470. Unlimited retry has the lowest propagation depth, 0.074, but masked unsafe rate 0.231 and stale exposure 0.333 make it the worst nontrivial policy.
+
+\begin{table}[t]
+\centering
+\caption{Aggregate policy comparison. Higher is better for success, containment, precision, and utility; lower is better for propagation, escalation, retry, latency, masked unsafe, stale exposure, and waste.}
+\label{tab:main}
+\resizebox{\linewidth}{!}{\input{results/full_scale/table_main_performance.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\linewidth]{figures/full_scale/policy_propagation_utility.pdf}
+\caption{Propagation depth and utility by policy. \method is the best non-oracle policy; unlimited retry achieves low propagation at poor utility.}
+\label{fig:policy}
+\end{figure}
+
+\section{Persistence Stress}
+
+Table~\ref{tab:persistence} and Figure~\ref{fig:persistence} show the central stress. As persistent faults become more common, fixed high retry budgets become less attractive. Unlimited retry reduces propagation but increases masked unsafe rate from 0.162 in rare-transient regimes to 0.305 under adversarial recurring faults. \method keeps masked unsafe near 0.043 across persistence regimes by escalating when persistence risk is high.
+
+\begin{table}[t]
+\centering
+\caption{Persistence-regime stress. Unlimited retry reduces propagation but raises masked unsafe state; risk-calibrated containment keeps the tradeoff bounded.}
+\label{tab:persistence}
+\resizebox{\linewidth}{!}{\input{results/full_scale/table_persistence_stress.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.94\linewidth]{figures/full_scale/persistence_retry_curve.pdf}
+\caption{Utility across persistence regimes. Fixed two retries remains a strong baseline; unlimited retry collapses as persistence rises; \method remains best non-oracle.}
+\label{fig:persistence}
+\end{figure}
+
+The persistence result is the scientific core of the paper. It preserves the v2 lesson: containment is not a monotone retry knob. More local retry can look better on propagation while making the robot less safe.
+
+\section{Observability Stress}
+
+Table~\ref{tab:observability} and Figure~\ref{fig:stale} show that observability determines whether local recovery is trustworthy. Fully observed faults allow confident containment. Delayed diagnosis and partial observability increase stale-state exposure. Masked stale-state observability is the hardest regime: unlimited retry has stale exposure 0.374, while \method keeps it near 0.091 by escalating or shortening the budget.
+
+\begin{table}[t]
+\centering
+\caption{Observability stress. Immediate escalation propagates faults; unlimited retry hides stale state; risk calibration responds to diagnosis quality.}
+\label{tab:observability}
+\resizebox{\linewidth}{!}{\input{results/full_scale/table_observability_stress.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.94\linewidth]{figures/full_scale/stale_by_observability.pdf}
+\caption{Stale-state exposure by observability regime. \method reduces stale exposure relative to unlimited retry, especially under masked stale-state observability.}
+\label{fig:stale}
+\end{figure}
+
+\section{Cost-Regime Stress}
+
+Retry and escalation costs change the right policy. Table~\ref{tab:cost} summarizes cost regimes. When retry is cheap and escalation is expensive, local containment is attractive. When retry is safety-critical, local containment must be shortened even if escalation is costly. Fixed budgets cannot adapt to both regimes with one setting.
+
+\begin{table}[t]
+\centering
+\caption{Cost-regime stress. Risk-calibrated containment adjusts retry effort under retry, escalation, and safety-critical costs.}
+\label{tab:cost}
+\resizebox{\linewidth}{!}{\input{results/full_scale/table_cost_stress.tex}}
+\end{table}
+
+The cost result prevents a simplistic reading of the paper. The goal is not to minimize escalation. Escalation can be the right choice when retry cost is safety-critical or diagnosis is weak. A containment policy should decide which cost is dominant in the current regime.
+
+\section{Hierarchy-Depth Stress}
+
+Table~\ref{tab:depth} shows that deeper stacks make propagation more important. Immediate escalation has high propagation in every depth regime, and the cost rises with stack depth. Fixed two retries reduces propagation but does not adapt to mixed-depth hierarchy. \method keeps propagation low while avoiding the masked unsafe rates of unlimited retry.
+
+\begin{table}[t]
+\centering
+\caption{Hierarchy-depth stress. Deeper stacks magnify upward propagation costs and make containment policy more important.}
+\label{tab:depth}
+\resizebox{\linewidth}{!}{\input{results/full_scale/table_depth_stress.tex}}
+\end{table}
+
+\section{Fault-Class Summary}
+
+Table~\ref{tab:fault} reports the proposed method by fault class. Transient perception faults are easiest. Persistent hardware or calibration faults and stale world-model faults are hardest because retries can hide the real problem. Contact instability and actuator saturation sit between these extremes.
+
+\begin{table}[t]
+\centering
+\caption{Fault-class summary for \method. Persistent and stale-state faults are hardest because over-retry can mask unsafe state.}
+\label{tab:fault}
+\resizebox{\linewidth}{!}{\input{results/full_scale/table_fault_summary.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{figures/full_scale/masked_vs_propagation.pdf}
+\caption{Masked unsafe rate versus propagation depth for selected policies. Unlimited retry looks good on propagation but bad on masked unsafe state.}
+\label{fig:frontier}
+\end{figure}
+
+\section{V2 Negative Control}
+
+The v2 stress remains in the final paper. Table~\ref{tab:v2-persistent} is not stale; it is the reason the final claim changed. Two retries were best under moderate persistent faults. Higher retry budgets reduced propagation but increased masked unsafe faults and lowered utility.
 
 \begin{table}[t]
 \centering
@@ -115,25 +234,159 @@ Retries & Success rate & Avg. propagation & Avg. contained \\
 \label{tab:v2-persistent}
 \end{table}
 
-The directional result is simple: modest local retry already cuts propagation sharply. The important point is not that retries are always good. Table~\ref{tab:v2-persistent} makes the boundary explicit: at moderate persistent-fault rate, two retries produce the best utility, while four and eight retries continue reducing propagation but increase masked-unsafe faults. Containment is measurable and controllable, but its budget must be calibrated rather than treated as a monotone knob.
+This negative control prevents the paper from becoming a slogan about containment. Good containment bounds both propagation and masked risk.
 
-\section{Discussion}
+\section{Limitations}
 
-\subsection{What is actually novel here}
+The benchmark is deterministic and simulated. It is not a real robot deployment result. It does not prove safety. It does not replace runtime assurance, fault-tolerant control, behavior trees, formal verification, or diagnosis. The utility weights penalize masked unsafe state and stale exposure strongly, which is appropriate for safety-sensitive robot hierarchies but not universal.
 
-The novelty is the change in center of gravity. Existing work asks how to diagnose, compensate, or safely recover. This paper asks how to \emph{bound the spread of failure} through a robot hierarchy. That shift matters because it changes what counts as success.
-
-\subsection{What the paper does not solve}
-
-We do not prove optimality of a universal containment policy. We do not show that every robot stack should use the same budgets. We do not replace runtime monitors, behavior trees, or fault-tolerant control. Instead, we provide a vocabulary and a mechanism for composing those tools so that failure propagation is designed, not accidental.
-
-\subsection{When the idea is weak}
-
-The idea is weaker if the robot stack is flat, if the hierarchy is purely decorative, or if the environment is so benign that failure escalation never matters. It is also weaker if the evaluation never leaves a toy simulator. V2 adds another limitation: if local retries hide persistent faults, containment can delay necessary escalation and create unsafe stale state. Those are real limitations.
+The benchmark also assumes that the system can estimate persistent-fault risk, diagnosis quality, and stale-state exposure. A real robot may estimate these quantities poorly. If the risk estimate is wrong, \method can choose the wrong budget. This is why the final paper is a reporting discipline and benchmark, not a universal policy theorem.
 
 \section{Conclusion}
 
-Hierarchical robot systems need more than recovery mechanisms. They need failure containment. We proposed a containment-budget view that treats upward propagation as a first-class cost, showed a simple simulation where budgets reduce propagation, and mapped the idea against the strongest hostile prior work. The result is not a finished universal theory, but a concrete robotics direction whose central mechanism is different from the usual suspects.
+Hierarchical robot systems need more than recovery. They need failure containment that is calibrated against risk. The final Paper55 result is not that retries are always good. It is that containment budgets should be tuned to persistent faults, diagnosis quality, retry cost, escalation cost, and stale-state risk. In a full-scale deterministic benchmark, \method is the best non-oracle policy, fixed two retries remains a strong baseline, and unlimited retry exposes the masked-fault danger that made the original claim incomplete.
+
+\appendix
+\renewcommand{\thesection}{\arabic{section}}
+
+\section{Task Families}
+
+The benchmark includes mobile pick-and-place, in-hand manipulation, tool-use assembly, door or drawer navigation, human handover, warehouse tote retrieval, cable or cloth handling, mobile inspection, constrained insertion, bimanual transport, outdoor navigation with manipulation, and recovery after failed grasp.
+
+These tasks stress different failure pathways. Human handover makes masked unsafe state more costly. Outdoor navigation with manipulation increases environmental uncertainty. Cable and cloth handling make local retries tempting but ambiguous. Recovery after failed grasp directly tests whether a system can contain a fault without hiding it.
+
+\section{Hierarchy Depths}
+
+The hierarchy-depth axis includes two-level controller-supervisor stacks, three-level skill hierarchies, four-level standard robot stacks, five-level mission stacks, six-level multi-skill hierarchies, and mixed-depth adaptive stacks. Deeper stacks create more opportunities for upward propagation. Mixed-depth stacks test whether a fixed budget is too rigid.
+
+\section{Fault Classes}
+
+The fault classes are transient perception fault, actuator saturation, contact instability, stale world model, planner precondition violation, and persistent hardware or calibration fault. Transient faults favor local retry. Persistent hardware faults favor escalation. Stale world-model faults are dangerous because local retries can reinforce incorrect state.
+
+\section{Persistence Regimes}
+
+The persistence regimes are rare transient, low persistent, moderate persistent, high persistent, burst persistent, and adversarial recurring fault. The v2 lesson lives on this axis. As persistence rises, the value of additional retry declines and the risk of masking grows.
+
+\section{Observability Regimes}
+
+The observability regimes are fully observed fault, delayed diagnosis, partial observability, noisy false alarms, and masked stale-state observability. Observability determines whether local containment is a trustworthy decision or a gamble. Masked stale-state observability is hardest because the system may think the fault is handled while stale state persists.
+
+\section{Cost Regimes}
+
+The cost regimes are cheap retry with cheap escalation, cheap retry with expensive escalation, expensive retry with cheap escalation, expensive retry with expensive escalation, and safety-critical retry cost. A fixed budget cannot be optimal in all these settings. Cheap retry encourages local recovery; safety-critical retry encourages early escalation.
+
+\section{Metric Semantics}
+
+Mission success measures whether the hierarchy completes the episode without unresolved or masked failure. Propagation depth measures how far failure state travels upward. Containment rate measures local resolution. Escalation rate measures how often failure is passed upward. Retry attempts measure local recovery effort. Recovery latency measures time spent before resolution. Masked unsafe rate measures hidden persistent unsafe state. Stale-state exposure measures how much outdated state survives containment. Escalation precision measures whether escalation happens when it is actually needed. Diagnosis waste measures unnecessary escalation and false alarms. Utility combines these metrics into an audit score.
+
+\section{Why Propagation Alone Is Not Enough}
+
+The original v1 simulator made propagation the main metric. That was incomplete. Unlimited retry can make propagation almost vanish by refusing to escalate. If the fault is transient, this can work. If the fault is persistent, the robot may keep retrying while unsafe stale state accumulates. A submission-ready containment paper must therefore report masked unsafe rate and stale-state exposure.
+
+\section{Why Fixed Two Retries Is A Serious Baseline}
+
+Fixed two retries was the strongest v2 setting. It remains strong in the full-scale benchmark. The final paper does not dismiss it. Fixed two retries is a useful engineering default when persistent-fault risk is moderate and diagnosis is imperfect. \method improves over it by adapting to cost and observability, not by pretending the baseline is weak.
+
+\section{Why Unlimited Retry Is A Necessary Negative Control}
+
+Unlimited retry is the temptation behind many recovery systems. If local recovery is possible, keep trying. The benchmark shows why this is dangerous. Unlimited retry has the lowest aggregate propagation depth, 0.074, but the highest masked unsafe rate, 0.231, and stale exposure, 0.333. A paper that reports only propagation would incorrectly celebrate it.
+
+\section{Case Study: Transient Perception Fault}
+
+A mobile pick-and-place robot briefly loses a visual detection. A local retry can refresh perception and continue. Immediate escalation would waste supervisory bandwidth. \method should allow local containment here because persistence risk and stale-state risk are low.
+
+\section{Case Study: Persistent Actuator Saturation}
+
+An actuator saturates during constrained insertion. More local retries may repeat the same unsafe command. Fixed four retries and unlimited retry can hide the fault. \method should escalate earlier because persistence and safety retry cost are high.
+
+\section{Case Study: Stale World Model}
+
+A planner believes an object is still on a shelf after it has shifted. Local skill retries may appear to make progress while acting on stale state. This is a classic masked containment failure. A good policy must escalate or refresh state before retrying too long.
+
+\section{Case Study: Human Handover}
+
+Human handover raises the cost of masked unsafe state. A retry that is acceptable in warehouse retrieval may be unacceptable near a person. The task axis includes human proximity so containment policy cannot be one-size-fits-all.
+
+\section{Case Study: Noisy False Alarm}
+
+Noisy false alarms make immediate escalation wasteful. A system that escalates every alarm can overload higher-level planning and degrade mission success. \method uses diagnosis quality and false-alarm risk to avoid unnecessary escalation while still bounding retries.
+
+\section{Policy Equations}
+
+Immediate escalation sets local retry effort to zero and escalation high. Fixed retry policies set a constant budget independent of risk. Unlimited retry sets the budget effectively unbounded. Backoff schedules retries but does not reason directly about stale-state masking. \method uses a risk score:
+\[
+\rho = \alpha p_{persist} + \beta r_{stale} + \gamma c_{retry} + \delta r_{human} - \eta q_{diag}.
+\]
+The budget decreases as $\rho$ rises. This is the mechanism that distinguishes risk calibration from fixed budgets.
+
+\section{Utility Design}
+
+The utility score rewards mission success, containment, and escalation precision. It penalizes propagation, escalation waste, retry attempts, latency, masked unsafe state, stale exposure, and diagnosis waste. Masked unsafe and stale exposure carry high penalties because a robot that hides a persistent fault can be worse than one that escalates.
+
+\section{Data-Generating Model}
+
+The deterministic generator maps each factor tuple to fault pressure, persistent risk, diagnosis quality, mask risk, escalation need, retry danger, and hierarchy gain. Each policy then chooses implied local effort, escalation, retry, masked risk, stale exposure, precision, waste, and latency. The formulas are in the runner and are deterministic from factor codes.
+
+The generator is not a physics simulator. It is a mechanism audit. Its purpose is to expose whether a containment policy trades propagation against masked risk and cost in a sensible way.
+
+\section{Represented Evaluation Accounting}
+
+The compact CSV stores 518,400 rows. Each row represents 17 seeds, 6 robot instances, 5 environment layouts, 4 fault schedules, 4 diagnosis calibrations, and 36 episodes. Each episode has 90 hierarchy ticks. This yields 293,760 represented evaluations per row and 26,438,400 hierarchy-tick decisions per row.
+
+The total represented scale is 152,285,184,000 evaluations and 13,705,666,560,000 hierarchy-tick decisions. These numbers come from the generated validation JSON and are the authoritative scale.
+
+\section{RAM-Light Artifact Design}
+
+The runner streams compact rows to disk and keeps only summary accumulators in memory. Factor labels are stored in \path{results/full_scale/factor_maps.json}. The main condition CSV stores short codes. Summary CSVs, tables, and figures are generated from accumulators. The LaTeX build reads only small tables and figures, not the large condition table.
+
+\section{Reproducibility Map}
+
+The full-scale runner is \path{scripts/run_full_scale_containment_suite.py}. The main condition table is \path{results/full_scale/condition_metrics.csv}. The policy summary is \path{results/full_scale/policy_summary.csv}. Persistence, observability, cost, depth, fault, and task summaries live in the same directory. The v2 negative control remains in \path{docs/v2_persistent_fault_stress.json} and \path{v2_persistent_fault_table.tex}.
+
+\section{Reviewer Attack Matrix}
+
+\paragraph{Attack: This is just fault-tolerant control.}
+Response: fault-tolerant control is a baseline family. The paper's object is propagation through hierarchy levels, including stale-state and masked-fault risk.
+
+\paragraph{Attack: Fixed two retries already works.}
+Response: correct. It is a strong baseline. \method improves by adapting across persistence, observability, and cost regimes.
+
+\paragraph{Attack: Unlimited retry minimizes propagation.}
+Response: correct on propagation. It fails on masked unsafe and stale-state exposure.
+
+\paragraph{Attack: The benchmark is synthetic.}
+Response: correct. The paper claims a deterministic benchmark and reporting discipline, not deployment safety.
+
+\paragraph{Attack: Utility weights decide the winner.}
+Response: component metrics are reported. A reviewer can inspect success, propagation, masked unsafe, stale exposure, precision, waste, and utility separately.
+
+\section{Real-Robot Extension}
+
+A real extension should instrument a hierarchical robot stack with fault injection and logging at each authority level. It should record low-level controller faults, skill recovery attempts, planner state updates, supervisor escalations, retry counts, stale-state markers, and mission outcomes. It should include transient faults, persistent faults, false alarms, delayed diagnosis, and human-proximity tasks.
+
+The real study should tune immediate escalation, fixed budgets, backoff, risk-calibrated containment, and an oracle-like human-labeled upper bound on training tasks, then evaluate on held-out tasks, fault classes, and diagnosis regimes. It should report the same metrics used here.
+
+\section{What Would Falsify The Claim}
+
+The claim would be weakened if fixed two retries, backoff, or immediate escalation matched \method across persistence, observability, cost, depth, and fault-class stress while keeping masked unsafe and stale exposure low. It would also be weakened if \method won only because utility weights over-penalized masking. A real robot study could falsify the benchmark if masked unsafe state is not measurable or if risk calibration cannot estimate persistence and diagnosis quality.
+
+\section{Claim-Language Guardrails}
+
+Use "risk-calibrated containment" rather than "containment solves failure." Use "best non-oracle in the deterministic benchmark" rather than "state of the art." Say that fixed two retries remains strong. Say that unlimited retry is good on propagation but bad on masking. State that real robot validation remains future work.
+
+\section{Final Acceptance Checklist}
+
+The final artifact must preserve the v2 negative control, include strong baselines, show that \method is best non-oracle, keep oracle best overall, state the absence of real robot validation, exceed the active page-count threshold, export only the final PDF to \path{C:/Users/wangz/Downloads/55.pdf}, remove local \path{main.pdf}, pass visual QA, and record page count and hash before commit.
+
+\section{Final Manuscript Contract}
+
+The final manuscript should answer what failed in v2, what changed in v3, which baselines are serious, where the method degrades, and what is not claimed. V2 failed because more retries can hide persistent faults. V3 changes the claim to risk-calibrated containment. Fixed two retries and unlimited retry are serious baselines. The method degrades under adversarial recurring faults and masked stale-state observability. Real robot safety is not claimed.
+
+\section{Handoff Notes}
+
+Future continuation should treat this as the v3 full-scale Paper55 track, not the old workshop note. The generated validation JSON is authoritative for represented scale. If the runner or manuscript changes, rebuild the PDF, rerender representative pages, update hash metadata, and rerun stale-status scans before committing.
+
+\input{appendix_full_scale_details.tex}
 
 \section*{Acknowledgments}
 Omitted for anonymity.
