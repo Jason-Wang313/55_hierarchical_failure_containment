@@ -1,14 +1,24 @@
 {
   "paper": 55,
-  "decision": "workshop-only",
+  "decision": "final_v3_full_scale",
   "canonical_pdf": "C:/Users/wangz/Downloads/55.pdf",
-  "key_result": "Persistent-fault stress shows calibrated budgets beat unbounded retry; at persistent-fault probability 0.25, 2 retries utility is 0.893 versus 0.841 for 8 retries.",
-  "v2_metrics": {
-    "moderate_persistent_two_retry_utility": 0.892865,
-    "moderate_persistent_two_retry_masked_unsafe": 0.0,
-    "moderate_persistent_eight_retry_utility": 0.841465,
-    "moderate_persistent_eight_retry_masked_unsafe": 0.0736,
-    "high_persistent_two_retry_utility": 0.861745,
-    "high_persistent_eight_retry_utility": 0.73295
-  }
+  "pages": 26,
+  "file_size_bytes": 318528,
+  "sha256": "B5F5452960DC2D69A0E0DAE258E33F440E6D2E8445D1B18B9B71403EFE58D4D7",
+  "full_scale": {
+    "condition_rows": 518400,
+    "represented_evaluations": 152285184000,
+    "represented_hierarchy_tick_decisions": 13705666560000,
+    "best_non_oracle_policy": "risk_calibrated",
+    "best_non_oracle_utility": 0.5467988399137437,
+    "oracle_utility": 0.8667621110182111,
+    "fixed_two_retries_utility": 0.47022162193520955,
+    "unlimited_retry_propagation": 0.07397096031054826,
+    "unlimited_retry_masked": 0.23120271037330284,
+    "unlimited_retry_stale": 0.33313452798814297,
+    "unlimited_retry_utility": -0.09622588777719528
+  },
+  "visual_qa": "Rendered the final Downloads PDF to 26 PNG pages and inspected representative pages.",
+  "local_main_pdf_removed": true,
+  "desktop_pdf_absent": true
 }

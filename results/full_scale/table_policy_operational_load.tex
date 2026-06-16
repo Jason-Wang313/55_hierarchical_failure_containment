@@ -1,0 +1,14 @@
+\begin{tabular}{lrrrrr}
+\toprule
+Policy & Escalate & Retry & Latency & Waste & Utility \\
+\midrule
+Oracle containment & 0.312 & 0.315 & 0.114 & 0.041 & 0.867 \\
+Risk-calibrated containment & 0.537 & 0.577 & 0.315 & 0.131 & 0.547 \\
+Fixed one retry & 0.562 & 0.323 & 0.214 & 0.190 & 0.492 \\
+Fixed two retries & 0.450 & 0.543 & 0.313 & 0.166 & 0.470 \\
+Local exponential backoff & 0.385 & 0.695 & 0.414 & 0.165 & 0.380 \\
+Immediate escalation & 0.842 & 0.002 & 0.134 & 0.350 & 0.328 \\
+Fixed four retries & 0.293 & 0.801 & 0.486 & 0.186 & 0.277 \\
+Unlimited retry & 0.109 & 1.133 & 0.864 & 0.286 & -0.096 \\
+\bottomrule
+\end{tabular}
