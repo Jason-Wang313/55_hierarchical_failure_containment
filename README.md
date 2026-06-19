@@ -21,7 +21,8 @@ The paper argues that robot hierarchies need explicit failure-containment budget
 - Path: `C:/Users/wangz/Downloads/55.pdf`
 - Pages: 26
 - Size: 318,528 bytes
-- SHA256: `B5F5452960DC2D69A0E0DAE258E33F440E6D2E8445D1B18B9B71403EFE58D4D7`
+- SHA256: `2C6242A4973EE0B5E9638E9DC2A0D98A0479D354C1A0ABDAAA2FD450639CBBDE`
+- VLA-style highlight hardening: 17 red link boxes on pages 3, 4, 5, 6, 13, 14, 15, 16, and 22, all with border `(0, 0, 1)`.
 - Local `main.pdf` is removed after build.
 - Desktop PDF copy is absent.
 

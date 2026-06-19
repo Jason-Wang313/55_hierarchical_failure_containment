@@ -2,7 +2,7 @@
 
 Status: final_v3_full_scale
 Attempt: 4
-Stage: submission_ready_full_scale
+Stage: submission_ready_full_scale_vla_highlight_hardened
 
 Current facts:
 - Literature rows: 1,102.
@@ -17,11 +17,14 @@ Current facts:
 - Canonical PDF: `C:/Users/wangz/Downloads/55.pdf`.
 - Canonical PDF pages: 26.
 - Canonical PDF size: 318,528 bytes.
-- Canonical PDF SHA256: `B5F5452960DC2D69A0E0DAE258E33F440E6D2E8445D1B18B9B71403EFE58D4D7`.
+- Canonical PDF SHA256: `2C6242A4973EE0B5E9638E9DC2A0D98A0479D354C1A0ABDAAA2FD450639CBBDE`.
+- VLA-style highlight hardening: 17 red link boxes on pages 3, 4, 5, 6, 13, 14, 15, 16, and 22.
+- Highlight annotation check: colors `{(1.0, 0.0, 0.0): 17}`, borders `{(0.0, 0.0, 1.0): 17}`.
+- Visual QA pages: 3, 4, 5, 6, 13, 14, 15, 16, and 22.
 - Local generated `main.pdf` is removed after build.
 - Desktop PDF copy is absent.
 
 Decision:
 - Final v3 full-scale submission candidate. The claim is risk-calibrated hierarchical failure containment, not monotone local retry.
 
-End time: 2026-06-16 10:21:02 +01:00
+End time: 2026-06-20 02:01:20 +08:00
